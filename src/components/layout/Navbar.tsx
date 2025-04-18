@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Menu, X, ChevronUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -9,17 +8,14 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   
-  // Handle scrolling effects
   useEffect(() => {
     const handleScroll = () => {
-      // Navbar background change on scroll
       if (window.scrollY > 60) {
         setScrolled(true);
       } else {
         setScrolled(false);
       }
       
-      // Back to top button visibility
       if (window.scrollY > 300) {
         setShowScrollTop(true);
       } else {
@@ -30,7 +26,7 @@ export function Navbar() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-  
+
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
@@ -42,7 +38,7 @@ export function Navbar() {
     <>
       <header className={cn(
         "fixed top-0 left-0 w-full z-50 transition-all duration-300",
-        scrolled ? "bg-white shadow-md py-2" : "bg-transparent py-4"
+        scrolled ? "bg-white/90 backdrop-blur-sm shadow-md py-2" : "bg-transparent py-4"
       )}>
         <div className="sbc-container flex justify-between items-center">
           <Link to="/" className="flex items-center">
@@ -52,7 +48,6 @@ export function Navbar() {
             )}>SBC</span>
           </Link>
           
-          {/* Mobile menu button */}
           <button 
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className={cn(
@@ -64,7 +59,6 @@ export function Navbar() {
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
           
-          {/* Desktop navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             {['Home', 'Services', 'About', 'Projects', 'Contact'].map((item) => (
               <Link 
@@ -81,7 +75,6 @@ export function Navbar() {
           </nav>
         </div>
         
-        {/* Mobile navigation */}
         <div className={cn(
           "md:hidden absolute w-full bg-white shadow-lg transition-all duration-300 ease-in-out overflow-hidden",
           isMenuOpen ? "max-h-64 opacity-100" : "max-h-0 opacity-0"
@@ -103,7 +96,6 @@ export function Navbar() {
         </div>
       </header>
       
-      {/* Back to top button */}
       <button
         onClick={scrollToTop}
         className={cn(
