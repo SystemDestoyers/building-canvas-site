@@ -5,6 +5,7 @@ export function BuildingCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [buildingProgress, setBuildingProgress] = useState(0);
   const [isCanvasReady, setIsCanvasReady] = useState(false);
+  const [isBuilt, setIsBuilt] = useState(false);
   
   useEffect(() => {
     const initCanvas = () => {
@@ -36,18 +37,30 @@ export function BuildingCanvas() {
   }, []);
 
   useEffect(() => {
-    const handleScroll = () => {
-      const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-      const currentScroll = window.scrollY;
-      const progress = (currentScroll / scrollHeight) * 100;
-      setBuildingProgress(Math.min(Math.max(progress, 0), 100));
-    };
+    if (isBuilt) return;
 
-    window.addEventListener('scroll', handleScroll);
-    handleScroll(); // Initialize progress based on current scroll position
-    
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+    const buildingSpeed = 2; // Increased speed
+    const buildInterval = setInterval(() => {
+      setBuildingProgress(prev => {
+        const newProgress = prev + buildingSpeed;
+        if (newProgress >= 100) {
+          setIsBuilt(true);
+          clearInterval(buildInterval);
+          document.body.style.overflow = 'auto';
+          return 100;
+        }
+        return newProgress;
+      });
+    }, 50);
+
+    // Lock scrolling until building is complete
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      clearInterval(buildInterval);
+      document.body.style.overflow = 'auto';
+    };
+  }, [isBuilt]);
   
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -69,10 +82,10 @@ export function BuildingCanvas() {
     ctx.fillStyle = '#333';
     ctx.fillRect(buildingX, buildingY + buildingHeight - currentHeight, buildingWidth, currentHeight);
     
-    // Glass windows
-    const floors = Math.floor(currentHeight / (buildingHeight / 12));
+    // Glass windows with faster animation
+    const floors = Math.floor(currentHeight / (buildingHeight / 15)); // More floors
     for (let i = 0; i < floors; i++) {
-      const floorHeight = buildingHeight / 12;
+      const floorHeight = buildingHeight / 15;
       const windowWidth = buildingWidth * 0.8;
       const windowX = buildingX + (buildingWidth - windowWidth) / 2;
       const windowY = buildingY + buildingHeight - (i + 1) * floorHeight;
@@ -81,8 +94,8 @@ export function BuildingCanvas() {
       ctx.fillRect(windowX, windowY, windowWidth, floorHeight * 0.6);
     }
     
-    // Modern architectural details for taller progress
-    if (buildingProgress > 50) {
+    // Modern architectural details appear earlier
+    if (buildingProgress > 30) { // Changed from 50 to 30
       const tower2Width = buildingWidth * 0.6;
       const tower2Height = currentHeight * 0.8;
       const tower2X = buildingX - tower2Width - 10;
@@ -91,9 +104,9 @@ export function BuildingCanvas() {
       ctx.fillStyle = '#444';
       ctx.fillRect(tower2X, tower2Y, tower2Width, tower2Height);
       
-      const tower2Floors = Math.floor(tower2Height / (buildingHeight / 12));
+      const tower2Floors = Math.floor(tower2Height / (buildingHeight / 15));
       for (let i = 0; i < tower2Floors; i++) {
-        const floorHeight = buildingHeight / 12;
+        const floorHeight = buildingHeight / 15;
         const windowWidth = tower2Width * 0.7;
         const windowX = tower2X + (tower2Width - windowWidth) / 2;
         const windowY = tower2Y + i * floorHeight;
@@ -103,8 +116,8 @@ export function BuildingCanvas() {
       }
     }
     
-    // Roof details at high progress
-    if (buildingProgress > 90) {
+    // Roof details appear earlier
+    if (buildingProgress > 70) { // Changed from 90 to 70
       ctx.fillStyle = '#1EAEDB';
       ctx.beginPath();
       ctx.moveTo(buildingX, buildingY + buildingHeight - currentHeight);
@@ -124,6 +137,11 @@ export function BuildingCanvas() {
           transition: 'opacity 1s ease-out'
         }}
       />
+      {!isBuilt && (
+        <div className="fixed bottom-4 right-4 bg-white/80 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg">
+          Building Progress: {Math.round(buildingProgress)}%
+        </div>
+      )}
     </div>
   );
 }
