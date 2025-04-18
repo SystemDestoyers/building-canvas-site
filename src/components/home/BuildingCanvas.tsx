@@ -4,11 +4,9 @@ import { useEffect, useRef, useState } from 'react';
 export function BuildingCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [buildingProgress, setBuildingProgress] = useState(0);
-  const [isComplete, setIsComplete] = useState(false);
   const [isCanvasReady, setIsCanvasReady] = useState(false);
   
   useEffect(() => {
-    // Ensure canvas is properly initialized
     const initCanvas = () => {
       const canvas = canvasRef.current;
       if (!canvas) return false;
@@ -16,7 +14,6 @@ export function BuildingCanvas() {
       const ctx = canvas.getContext('2d');
       if (!ctx) return false;
       
-      // Set canvas dimensions considering device pixel ratio
       canvas.width = canvas.offsetWidth * window.devicePixelRatio;
       canvas.height = canvas.offsetHeight * window.devicePixelRatio;
       ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
@@ -24,23 +21,32 @@ export function BuildingCanvas() {
       return true;
     };
     
-    // Try to initialize canvas and set ready state
     const canvasReady = initCanvas();
     setIsCanvasReady(canvasReady);
     
-    // Handle window resize
     const handleResize = () => {
       if (initCanvas()) {
-        // Force a redraw
         setIsCanvasReady(false);
         setTimeout(() => setIsCanvasReady(true), 10);
       }
     };
     
     window.addEventListener('resize', handleResize);
-    return () => {
-      window.removeEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const currentScroll = window.scrollY;
+      const progress = (currentScroll / scrollHeight) * 100;
+      setBuildingProgress(Math.min(Math.max(progress, 0), 100));
     };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Initialize progress based on current scroll position
+    
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
   
   useEffect(() => {
@@ -50,24 +56,16 @@ export function BuildingCanvas() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     
-    // Enable scroll after animation completes
-    if (buildingProgress >= 100 && !isComplete) {
-      setIsComplete(true);
-      document.body.style.overflow = 'auto';
-    }
-    
-    // Clear canvas
     ctx.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
     
-    const buildingWidth = canvas.offsetWidth * 0.2; // Slimmer building
-    const buildingHeight = canvas.offsetHeight * 0.7; // Taller building
-    const buildingX = canvas.offsetWidth * 0.7; // Position to the right side
+    const buildingWidth = canvas.offsetWidth * 0.2;
+    const buildingHeight = canvas.offsetHeight * 0.7;
+    const buildingX = canvas.offsetWidth * 0.7;
     const buildingY = canvas.offsetHeight - buildingHeight;
     
-    // Draw modern building based on progress
     const currentHeight = (buildingHeight * buildingProgress) / 100;
     
-    // Building foundation
+    // Draw modern building based on progress
     ctx.fillStyle = '#333';
     ctx.fillRect(buildingX, buildingY + buildingHeight - currentHeight, buildingWidth, currentHeight);
     
@@ -83,9 +81,8 @@ export function BuildingCanvas() {
       ctx.fillRect(windowX, windowY, windowWidth, floorHeight * 0.6);
     }
     
-    // Modern architectural details
+    // Modern architectural details for taller progress
     if (buildingProgress > 50) {
-      // Add a second tower
       const tower2Width = buildingWidth * 0.6;
       const tower2Height = currentHeight * 0.8;
       const tower2X = buildingX - tower2Width - 10;
@@ -94,7 +91,6 @@ export function BuildingCanvas() {
       ctx.fillStyle = '#444';
       ctx.fillRect(tower2X, tower2Y, tower2Width, tower2Height);
       
-      // Windows for second tower
       const tower2Floors = Math.floor(tower2Height / (buildingHeight / 12));
       for (let i = 0; i < tower2Floors; i++) {
         const floorHeight = buildingHeight / 12;
@@ -107,7 +103,7 @@ export function BuildingCanvas() {
       }
     }
     
-    // Roof details
+    // Roof details at high progress
     if (buildingProgress > 90) {
       ctx.fillStyle = '#1EAEDB';
       ctx.beginPath();
@@ -116,30 +112,7 @@ export function BuildingCanvas() {
       ctx.lineTo(buildingX + buildingWidth, buildingY + buildingHeight - currentHeight);
       ctx.fill();
     }
-  }, [buildingProgress, isComplete, isCanvasReady]);
-  
-  useEffect(() => {
-    if (!isCanvasReady) return;
-    
-    // Lock scrolling initially
-    document.body.style.overflow = 'hidden';
-    
-    // Start animation
-    const animationInterval = setInterval(() => {
-      setBuildingProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(animationInterval);
-          return 100;
-        }
-        return prev + 0.5;
-      });
-    }, 40); // Slightly faster animation
-    
-    return () => {
-      clearInterval(animationInterval);
-      document.body.style.overflow = 'auto';
-    };
-  }, [isCanvasReady]);
+  }, [buildingProgress, isCanvasReady]);
   
   return (
     <div className="absolute inset-0 pointer-events-none">
@@ -147,15 +120,10 @@ export function BuildingCanvas() {
         ref={canvasRef}
         className="absolute top-0 right-0 w-full h-full"
         style={{ 
-          opacity: isComplete ? 0.6 : 0.8,
+          opacity: 0.8,
           transition: 'opacity 1s ease-out'
         }}
       />
-      {isCanvasReady && !isComplete && (
-        <div className="absolute bottom-10 right-10 text-center text-white bg-black/30 px-3 py-1 rounded-md">
-          Building in progress... {Math.round(buildingProgress)}%
-        </div>
-      )}
     </div>
   );
 }
