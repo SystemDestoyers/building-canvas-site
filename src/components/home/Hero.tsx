@@ -1,6 +1,7 @@
 
 import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { BuildingCanvas } from './BuildingCanvas';
 
 export function Hero() {
   return (
@@ -15,8 +16,11 @@ export function Hero() {
         }}
       />
       
+      {/* Building Canvas */}
+      <BuildingCanvas />
+      
       {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-sbc-gray-darker/80 to-sbc-gray-darker/50 z-10"></div>
+      <div className="absolute inset-0 bg-gradient-to-r from-sbc-gray-darker/80 to-sbc-gray-darker/30 z-10"></div>
       
       {/* Content */}
       <div className="sbc-container relative z-20 text-white text-center md:text-left">

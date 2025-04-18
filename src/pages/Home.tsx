@@ -1,15 +1,12 @@
 import { Layout } from '@/components/layout/Layout';
 import { Hero } from '@/components/home/Hero';
-import { BuildingCanvas } from '@/components/home/BuildingCanvas';
 import { ServiceTeaser } from '@/components/home/ServiceTeaser';
 import { ScrollAnimation } from '@/components/home/ScrollAnimation';
 
 const Home = () => {
   return (
     <Layout>
-      <BuildingCanvas />
-      
-      <div className="pt-16">
+      <div className="pt-0">
         <Hero />
         
         <ScrollAnimation>
